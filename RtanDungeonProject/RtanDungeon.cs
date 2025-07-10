@@ -20,7 +20,6 @@ namespace RtanDungeonProject
     {
         public static void Main(string[] args)
         {
-
             RtanDungeon rd = new RtanDungeon();
             rd.GameStart();
         }
@@ -31,13 +30,14 @@ namespace RtanDungeonProject
     {
         // 캐릭터 정보 인스턴스
         Player player;
-
+        Shop shop;
 
         public void GameStart()
         {
             // 저장된 데이터 확인?
             // 캐릭터 설정?
             MakeCharacter();
+            InitGame();
             ShowMainmenu();
         }
 
@@ -96,6 +96,8 @@ namespace RtanDungeonProject
             }
 
             player = new Player(chrClass, name, 1, 100, 10, 5);
+            player.AddItem(new Weapon("나뭇가지", "단순한 나뭇가지다.", 10, ItemType.Weapon, 3));
+            player.AddItem(new Armor("허름한 천옷", "허름한 천으로 만들어진 옷이다.", 15, ItemType.Armor, 5));
         }
 
         void ShowMainmenu()
@@ -104,7 +106,7 @@ namespace RtanDungeonProject
             {
                 Console.Clear();
                 Console.WriteLine("르탄 마을에 오신것을 환영합니다.\n");
-                Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 종료하기");
+                Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 종료하기\n");
                 while (true)
                 {
                     Console.Write(">> ");
@@ -130,9 +132,11 @@ namespace RtanDungeonProject
                             break;
                         case 2:
                             // 인벤토리 열기
+                            ShowInventory();
                             break;
                         case 3:
                             // 상점 열기
+                            OpenShop();
                             break;
                         case 4:
                             // 던전 입장
@@ -225,17 +229,159 @@ namespace RtanDungeonProject
 
         void ShowInventory()
         {
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("인벤토리");
+                Console.ResetColor();
+                Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.\n");
 
+                Console.WriteLine("[아이템 목록]");
+
+                // 아이템 목록 출력함
+                foreach(Item item in player.GetItems())
+                {
+                    item.ShowItemInfo();
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("\n1. 장착 관리\n2. 나가기\n");
+                Console.WriteLine("원하시는 행동을 입력하세요.");
+                Console.Write(">> ");
+                while (true)
+                {
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    switch (choiceNum)
+                    {
+                        case 1:
+                            // 장착 관리 메뉴
+                            EquipMenu();
+                            break;
+                        case 2:
+                            return;
+                        default:
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine("잘못된 입력입니다.");
+                            Console.ResetColor();
+                            continue;
+                    }
+                    break;
+                }
+                
+
+
+            }
+            
+        }
+
+        void EquipMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("인벤토리 - 장착 관리");
+                Console.ResetColor();
+                Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.\n");
+
+                Console.WriteLine("[아이템 목록]");
+
+                // 아이템 목록 출력함
+                List<Item> items = player.GetItems();
+
+                for (int i = 0; i < items.Count; i++)
+                {
+                    Console.Write($"- {i+1} ");
+                    items[i].ShowItemInfo();
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("\n0. 나가기\n");
+                Console.WriteLine("원하시는 행동을 입력하세요.");
+                Console.Write(">> ");
+                while (true)
+                {
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    if (choiceNum > 0 && choiceNum <= items.Count)
+                    {
+                        try
+                        {
+                            player.EqipItem((Equipment)items[choiceNum-1]);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("장착 불가능한 아이템입니다.");
+                            continue;
+                        }
+                    }
+                    else if (choiceNum == 0)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+                    break;
+                }
+            }
         }
 
         void OpenShop()
         {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("상점");
+            Console.ResetColor();
+            Console.WriteLine("필요한 아이템을 구매할 수 있는 상점입니다.\n");
 
+            Console.WriteLine("[보유 골드]");
+            Console.WriteLine($"{player.Gold} G\n");
+
+            Console.WriteLine("[아이템 목록]");
+            shop.ShowItemsList();
+
+            Console.ReadKey();
         }
 
         void EnterDungeon()
         {
 
+        }
+
+        void InitGame()
+        {
+            shop = new Shop();
         }
     }
 
@@ -294,7 +440,7 @@ namespace RtanDungeonProject
         public Player(ChrClass chrClass, string name, int level, int hp, int attack, int defence) : base(name, level, hp, attack, defence)
         {
             this.chrClass = chrClass;
-            this.gold = 0;
+            this.gold = 500;
         }
 
         // 아이템으로 올라가는 능력치
@@ -348,12 +494,21 @@ namespace RtanDungeonProject
             {
                 equips.Remove(equip);
                 equip.IsEquip = false;
+                //equip.isEquip = false;
             }
             else
             {
                 equips.Add(equip);
                 equip.IsEquip = true;
+                //equip.isEquip = true;
             }
+        }
+
+        public List<Item> GetItems() { return items; }
+
+        public void AddItem(Item item)
+        {
+            items.Add(item);
         }
     }
 
@@ -364,19 +519,32 @@ namespace RtanDungeonProject
         protected int price;
         protected ItemType type;
 
+        public Item(string name, string description, int price, ItemType type)
+        {
+            this.name = name;
+            this.description = description;
+            this.price = price;
+            this.type = type;
+        }
+
         public string Name { get { return name; } }
         public string Descrption { get { return description; } }
         public int Price { get { return price; } }
         public ItemType Type { get { return type; } }
 
-        protected abstract void ShowItemInfo();
+        public abstract void ShowItemInfo();
     }
 
     abstract class Equipment : Item
     {
-        protected bool isEquip;
+        public bool isEquip;
 
-        public bool IsEquip { get { return isEquip; } set { IsEquip = value; } }
+        public Equipment(string name, string desc, int price, ItemType type) : base(name, desc, price, type)
+        {
+            isEquip = false;
+        }
+
+        public bool IsEquip { get { return isEquip; } set { isEquip = value; } }
     }
 
     class Weapon : Equipment
@@ -385,10 +553,15 @@ namespace RtanDungeonProject
 
         public int AttackPower { get { return attackPower; } }
 
-        protected override void ShowItemInfo()
+        public Weapon(string name, string desc, int price, ItemType type, int attackPower) : base(name, desc, price, type)
+        {
+            this.attackPower = attackPower;
+        }
+
+        public override void ShowItemInfo()
         {
             if (isEquip) Console.Write("[E]");
-            Console.WriteLine($"{name}\t | 방어력 : {attackPower}\t | {description}");
+            Console.Write($"{name}\t | 공격력 : +{attackPower}\t | {description}");
         }
     }
 
@@ -398,10 +571,69 @@ namespace RtanDungeonProject
 
         public int DefencePower { get { return defencePower; } }
 
-        protected override void ShowItemInfo()
+        public Armor(string name, string desc, int price, ItemType type, int defencePower) : base(name, desc, price, type)
+        {
+            this.defencePower = defencePower;
+        }
+
+        public override void ShowItemInfo()
         {
             if (isEquip) Console.Write("[E]");
-            Console.WriteLine($"{name}\t | 방어력 : {defencePower}\t | {description}");
+            Console.Write($"{name}\t | 방어력 : +{defencePower}\t | {description}");
+        }
+    }
+
+    class Shop
+    {
+        List<Item> sellingItems;
+        List<Item> curItems;
+
+        public void SellItem(Item item)
+        {
+            curItems.Remove(item);
+        }
+
+        public void ShowItemsList()
+        {
+            if(curItems == null || sellingItems == null) return;
+            foreach(Item item in sellingItems)
+            {
+                item.ShowItemInfo();
+                if (curItems.Contains(item))
+                    Console.WriteLine($"\t| {item.Price}");
+                else
+                    Console.WriteLine($"\t| 구매 완료");
+            }
+        }
+
+        public void ShowSellingItems()
+        {
+            if(curItems == null || sellingItems == null) return;
+            for(int i=0;i<sellingItems.Count;i++)
+            {
+                Console.Write($"- {i} ");
+                sellingItems[i].ShowItemInfo();
+                if (curItems.Contains(sellingItems[i]))
+                    Console.WriteLine($"\t| {sellingItems[i].Price}");
+                else
+                    Console.WriteLine($"\t| 구매 완료");
+            }
+        }
+
+        public List<Item> GetSellingItems()
+        {
+            return sellingItems;
+        }
+
+        public List<Item> GetCurItems()
+        {
+            return curItems;
+        }
+
+        public void AddItem(Item item)
+        {
+            sellingItems.Add(item);
+            curItems.Add(item);
         }
     }
 
