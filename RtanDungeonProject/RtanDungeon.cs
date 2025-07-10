@@ -16,6 +16,12 @@ namespace RtanDungeonProject
      * 6) 아이템 구매
      */
 
+    /// <summary>
+    /// 구현하면서 궁금한 사항
+    /// 1. 사용자 입력받는 부분을 반복문을 통해서 구현하였는데, 아무리 생각해봐도 생노가다같음 이를 좀 더 효율적으로 바꾸는 방법이 있을까?
+    /// 
+    /// </summary>
+
     internal class TxtGame
     {
         public static void Main(string[] args)
@@ -41,7 +47,7 @@ namespace RtanDungeonProject
             ShowMainmenu();
         }
 
-        void MakeCharacter()
+        void MakeCharacter() // 캐릭터 생성
         {
             Console.Clear();
             Console.WriteLine("<<캐릭터 생성>>\n");
@@ -100,7 +106,7 @@ namespace RtanDungeonProject
             player.AddItem(new Armor("허름한 천옷", "허름한 천으로 만들어진 옷이다.", 15, ItemType.Armor, 5));
         }
 
-        void ShowMainmenu()
+        void ShowMainmenu() // 메인메뉴
         {
             while (true)
             {
@@ -140,9 +146,11 @@ namespace RtanDungeonProject
                             break;
                         case 4:
                             // 던전 입장
+                            EnterDungeon();
                             break;
                         case 5:
                             // 휴식하기
+                            Rest();
                             break;
                         case 6:
                             // 게임 종료
@@ -159,7 +167,7 @@ namespace RtanDungeonProject
 
         }
 
-        void ShowStatus()
+        void ShowStatus() // 캐릭터 스테이터스 표시
         {
             Console.Clear();
             if (player != null)
@@ -230,7 +238,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void ShowInventory()
+        void ShowInventory() // 캐릭터 인벤토리 표시
         {
             while (true)
             {
@@ -249,7 +257,7 @@ namespace RtanDungeonProject
                     Console.WriteLine();
                 }
 
-                Console.WriteLine("\n1. 장착 관리\n2. 나가기\n");
+                Console.WriteLine("\n1. 장착 관리\n0. 나가기\n");
                 Console.WriteLine("원하시는 행동을 입력하세요.");
                 Console.Write(">> ");
                 while (true)
@@ -274,7 +282,7 @@ namespace RtanDungeonProject
                             // 장착 관리 메뉴
                             EquipMenu();
                             break;
-                        case 2:
+                        case 0:
                             return;
                         default:
                             Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -291,7 +299,7 @@ namespace RtanDungeonProject
             
         }
 
-        void EquipMenu()
+        void EquipMenu() // 캐릭터 장비 장착 화면
         {
             while (true)
             {
@@ -360,7 +368,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void OpenShop()
+        void OpenShop() // 상점 물건 전시
         {
             while (true)
             {
@@ -414,7 +422,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void OpenTradeMenu()
+        void OpenTradeMenu() // 상점 아이템 구매
         {
             while(true)
             {
@@ -468,17 +476,75 @@ namespace RtanDungeonProject
             }
         }
 
-        void EnterDungeon()
+        void EnterDungeon() // 던전 메뉴 진입
         {
 
         }
 
-        void Rest()
+        void Rest() // 휴식
         {
+            Console.Clear();
+            Console.ForegroundColor= ConsoleColor.DarkYellow;
+            Console.WriteLine("휴식하기");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("500 ");
+            Console.ResetColor();
+            Console.Write("G 를 내면 체력을 바로 회복할 수 있습니다. (보유 골드 : ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"{player.Gold}");
+            Console.ResetColor();
+            Console.WriteLine(" G)");
 
+            Console.WriteLine("\n1. 휴식하기\n0. 나가기\n");
+            Console.WriteLine("원하시는 행동을 입력하세요.");
+            Console.Write(">> ");
+            while (true)
+            {
+                string choice = Console.ReadLine();
+                int choiceNum = 0;
+                try
+                {
+                    choiceNum = int.Parse(choice);
+                }
+                catch
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("잘못된 입력입니다.");
+                    Console.ResetColor();
+                    continue;
+                }
+
+                switch (choiceNum)
+                {
+                    case 1:
+                        // 장착 관리 메뉴
+                        if(player.Gold >= 500)
+                        {
+                            player.Hp = 100;
+                            player.Gold -= 500;
+                            Console.WriteLine("휴식을 완료했습니다.");
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine("소지금이 부족합니다.");
+                            Console.ResetColor();
+                        }
+                        Console.ReadKey();
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                }
+                break;
+            }
         }
 
-        void InitGame()
+        void InitGame() // 게임 정보 초기화
         {
             shop = new Shop();
             shop.AddItem(new Weapon("부러진 직검", "날이 중간부터 부러져 없어진 직검이다.", 200, ItemType.Weapon, 5));
@@ -501,7 +567,7 @@ namespace RtanDungeonProject
 
         public string Name { get { return name; } }
         public int Level { get { return level; } }
-        public int Hp { get { return hp; } }
+        public int Hp { get { return hp; } set { hp = value; } }
         public int Attack { get { return attack; } }
         public int Defence { get { return defence; } }
 
