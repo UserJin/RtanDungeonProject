@@ -8,18 +8,29 @@ namespace RtanDungeonProject
 {
     /*
      * 구현 필수 사항
-     * 1) 게임 시작 화면
-     * 2) 상태 보기
-     * 3) 인벤토리
-     * 4) 장착 관리
-     * 5) 상점
-     * 6) 아이템 구매
+     * 1) 게임 시작 화면 V
+     * 2) 상태 보기 V
+     * 3) 인벤토리 V
+     * 4) 장착 관리 V
+     * 5) 상점 V
+     * 6) 아이템 구매 V
+     */
+
+    /*
+     * 도전 사항
+     * 1) 휴식 기능 구현 V
+     * 2) 판매 기능 구현
+     * 3) 장착 개선 V
+     * 4) 레벨업 기능 구현
+     * 5) 던전 기능 구현
+     * 6) 데이터 저장 구현
      */
 
     /// <summary>
-    /// 구현하면서 궁금한 사항
-    /// 1. 사용자 입력받는 부분을 반복문을 통해서 구현하였는데, 아무리 생각해봐도 생노가다같음 이를 좀 더 효율적으로 바꾸는 방법이 있을까?
-    /// 
+    /// 고찰
+    /// 1. 사용자 입력받는 부분을 반복문을 통해서 구현하였는데, 아무리 생각해봐도 생노가다같음. 이를 함수로 빼서 좀 더 효율적으로 바꾸는 방법이 있을까?
+    /// 2. 현재 파일에 클래스를 여러개 선언하고 사용하고 있음, 파일을 나누고 일부 클래스는 옮겨두면 가독성이 좋을 거 같은데 익숙하지 않아서 어떤식으로 해야할지 감이 안잡힘
+    /// 3. 데이터 저장 구현의 경우 txt파일이나 Json파일 등으로 외부에 파일을 저장하고 이를 시작할 때 불러오는 방식으로 구현가능할 듯하다. 다만 이쪽도 사용한 경험이 별로 없어서 찾아봐야할듯함
     /// </summary>
 
     internal class TxtGame
@@ -407,7 +418,7 @@ namespace RtanDungeonProject
                     switch (choiceNum)
                     {
                         case 1:
-                            OpenTradeMenu();
+                            OpenBuyMenu();
                             break;
                         case 0:
                             return;
@@ -422,7 +433,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void OpenTradeMenu() // 상점 아이템 구매
+        void OpenBuyMenu() // 상점 아이템 구매
         {
             while(true)
             {
@@ -604,6 +615,9 @@ namespace RtanDungeonProject
         List<Item> items = new List<Item>();
         List<Equipment> equips = new List<Equipment>();
 
+        Weapon equipWeapon = null;
+        Armor equipArmor = null;
+
         public ChrClass GetChrClass() { return chrClass; }
         public int Gold { get { return gold; } set { gold = value; } }
 
@@ -616,34 +630,42 @@ namespace RtanDungeonProject
         // 아이템으로 올라가는 능력치
         public int GetAttackOnlyItems()
         {
-            int attackPower = 0;
+            // 이전 알고리즘
+            //int attackPower = 0;
 
-            foreach (var item in equips)
-            {
-                if (item.Type == ItemType.Weapon)
-                {
-                    Weapon weapon = (Weapon)item;
-                    attackPower += weapon.AttackPower;
-                }
-            }
+            //foreach (var item in equips)
+            //{
+            //    if (item.Type == ItemType.Weapon)
+            //    {
+            //        Weapon weapon = (Weapon)item;
+            //        attackPower += weapon.AttackPower;
+            //    }
+            //}
 
-            return attackPower;
+            //return attackPower;
+
+            // 수정 알고리즘
+            return equipWeapon.AttackPower;
         }
 
         public int GetDefenceOnlyItems()
         {
-            int defencePower = 0;
+            // 이전 알고리즘
+            //int defencePower = 0;
 
-            foreach (var item in equips)
-            {
-                if (item.Type == ItemType.Armor)
-                {
-                    Armor armor = (Armor)item;
-                    defencePower += armor.DefencePower;
-                }
-            }
+            //foreach (var item in equips)
+            //{
+            //    if (item.Type == ItemType.Armor)
+            //    {
+            //        Armor armor = (Armor)item;
+            //        defencePower += armor.DefencePower;
+            //    }
+            //}
 
-            return defencePower;
+            //return defencePower;
+
+            // 수정 알고리즘
+            return equipArmor.DefencePower;
         }
 
         // 아이템을 포함한 최종 능력치
@@ -660,17 +682,41 @@ namespace RtanDungeonProject
 
         public void EqipItem(Equipment equip)
         {
-            if (equip.IsEquip)
+            // 이전 알고리즘
+            //if (equip.IsEquip)
+            //{
+            //    equips.Remove(equip);
+            //    equip.IsEquip = false;
+            //}
+            //else
+            //{
+            //    equips.Add(equip);
+            //    equip.IsEquip = true;
+            //}
+
+            // 1종류 1장착 알고리즘
+            if(equip.Type == ItemType.Weapon)
             {
-                equips.Remove(equip);
-                equip.IsEquip = false;
-                //equip.isEquip = false;
+                if(equipWeapon != null)
+                {
+                    equipWeapon.IsEquip = false;
+                }
+                equipWeapon = (Weapon)equip;
+                equipWeapon.IsEquip = true;
+            }
+            else if(equip.Type == ItemType.Armor)
+            {
+                if (equipArmor != null)
+                {
+                    equipArmor.IsEquip = false;
+                }
+                equipArmor = (Armor)equip;
+                equipArmor.IsEquip = true;
             }
             else
             {
-                equips.Add(equip);
-                equip.IsEquip = true;
-                //equip.isEquip = true;
+                // 허용되지 않은 상태
+                return;
             }
         }
 
@@ -712,7 +758,7 @@ namespace RtanDungeonProject
 
     abstract class Equipment : Item
     {
-        public bool isEquip;
+        protected bool isEquip;
 
         public Equipment(string name, string desc, int price, ItemType type) : base(name, desc, price, type)
         {
