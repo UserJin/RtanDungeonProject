@@ -106,7 +106,7 @@ namespace RtanDungeonProject
             {
                 Console.Clear();
                 Console.WriteLine("르탄 마을에 오신것을 환영합니다.\n");
-                Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 종료하기\n");
+                Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 휴식 하기\n6) 종료하기\n");
                 while (true)
                 {
                     Console.Write(">> ");
@@ -142,6 +142,9 @@ namespace RtanDungeonProject
                             // 던전 입장
                             break;
                         case 5:
+                            // 휴식하기
+                            break;
+                        case 6:
                             // 게임 종료
                             return;
                         default:
@@ -359,19 +362,110 @@ namespace RtanDungeonProject
 
         void OpenShop()
         {
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("상점");
-            Console.ResetColor();
-            Console.WriteLine("필요한 아이템을 구매할 수 있는 상점입니다.\n");
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("상점");
+                Console.ResetColor();
+                Console.WriteLine("필요한 아이템을 구매할 수 있는 상점입니다.\n");
 
-            Console.WriteLine("[보유 골드]");
-            Console.WriteLine($"{player.Gold} G\n");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine($"{player.Gold} G\n");
 
-            Console.WriteLine("[아이템 목록]");
-            shop.ShowItemsList();
+                Console.WriteLine("[아이템 목록]");
+                shop.ShowItemsList();
 
-            Console.ReadKey();
+                Console.WriteLine("\n1. 아이템 구매\n0. 나가기\n");
+                Console.WriteLine("원하시는 행동을 입력하세요.");
+                Console.Write(">> ");
+
+                while (true)
+                {
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    switch (choiceNum)
+                    {
+                        case 1:
+                            OpenTradeMenu();
+                            break;
+                        case 0:
+                            return;
+                        default:
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine("잘못된 입력입니다.");
+                            Console.ResetColor();
+                            continue;
+                    }
+                    break;
+                }
+            }
+        }
+
+        void OpenTradeMenu()
+        {
+            while(true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("상점 - 아이템 구매");
+                Console.ResetColor();
+                Console.WriteLine("필요한 아이템을 구매할 수 있는 상점입니다.\n");
+
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine($"{player.Gold} G\n");
+
+                Console.WriteLine("[아이템 목록]");
+                shop.ShowSellingItems();
+                Console.WriteLine("\n0. 나가기\n");
+                Console.WriteLine("원하시는 행동을 입력하세요.");
+                Console.Write(">> ");
+                while (true)
+                {
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    if (choiceNum > 0 && choiceNum <= shop.GetSellingItems().Count)
+                    {
+                        player.BuyItem(choiceNum, shop);
+                    }
+                    else if (choiceNum == 0)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+                    break;
+                }
+            }
         }
 
         void EnterDungeon()
@@ -379,9 +473,19 @@ namespace RtanDungeonProject
 
         }
 
+        void Rest()
+        {
+
+        }
+
         void InitGame()
         {
             shop = new Shop();
+            shop.AddItem(new Weapon("부러진 직검", "날이 중간부터 부러져 없어진 직검이다.", 200, ItemType.Weapon, 5));
+            shop.AddItem(new Weapon("의식검", "의식에 사용되는 초승달 모양의 검이다.", 500, ItemType.Weapon, 7));
+            shop.AddItem(new Weapon("커다란 대검", "양손으로도 휘두르기 힘든 대검이다. -부웅쾅부우웅쾅부우웅콰앙-", 1000, ItemType.Weapon, 10));
+            shop.AddItem(new Armor("철제 투구", "양 옆으로 박힌 뿔이 특징인 투구다. 이걸 쓴다고 용언을 사용할 수는 없다.", 200, ItemType.Armor, 7));
+            shop.AddItem(new Armor("하일리아의 방패", "하이랄의 기사들에게 주어지는 방패다. 명심하자 이 방패로도 닭은 못막는다.", 500, ItemType.Armor, 10));
         }
     }
 
@@ -510,6 +614,11 @@ namespace RtanDungeonProject
         {
             items.Add(item);
         }
+
+        public void BuyItem(int itemIndex, Shop shop)
+        {
+            shop.SellItemTo(itemIndex, this);
+        }
     }
 
     abstract class Item
@@ -585,12 +694,15 @@ namespace RtanDungeonProject
 
     class Shop
     {
-        List<Item> sellingItems;
-        List<Item> curItems;
+        List<Item> sellingItems =  new List<Item>();
+        List<Item> curItems = new List<Item>();
 
-        public void SellItem(Item item)
+        public void CopyItemList()
         {
-            curItems.Remove(item);
+            foreach (Item item in sellingItems)
+            {
+                curItems.Add(item);
+            }
         }
 
         public void ShowItemsList()
@@ -600,7 +712,7 @@ namespace RtanDungeonProject
             {
                 item.ShowItemInfo();
                 if (curItems.Contains(item))
-                    Console.WriteLine($"\t| {item.Price}");
+                    Console.WriteLine($"\t| {item.Price}G");
                 else
                     Console.WriteLine($"\t| 구매 완료");
             }
@@ -611,10 +723,10 @@ namespace RtanDungeonProject
             if(curItems == null || sellingItems == null) return;
             for(int i=0;i<sellingItems.Count;i++)
             {
-                Console.Write($"- {i} ");
+                Console.Write($"- {i+1} ");
                 sellingItems[i].ShowItemInfo();
                 if (curItems.Contains(sellingItems[i]))
-                    Console.WriteLine($"\t| {sellingItems[i].Price}");
+                    Console.WriteLine($"\t| {sellingItems[i].Price}G");
                 else
                     Console.WriteLine($"\t| 구매 완료");
             }
@@ -634,6 +746,36 @@ namespace RtanDungeonProject
         {
             sellingItems.Add(item);
             curItems.Add(item);
+        }
+
+        public void SellItemTo(int itemIndex, Player player)
+        {
+            if (curItems.Contains(sellingItems[itemIndex-1]))
+            {
+                if (sellingItems[itemIndex-1].Price <= player.Gold)
+                {
+                    //구매
+                    curItems.Remove(sellingItems[itemIndex - 1]);
+                    player.Gold -= sellingItems[itemIndex - 1].Price;
+                    player.AddItem(sellingItems[itemIndex - 1]);
+                }
+                else
+                {
+                    // 돈 부족
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("보유 소지금이 부족합니다.");
+                    Console.ResetColor();
+                    Console.ReadKey();
+                }
+            }
+            else
+            {
+                // 이미 구매한 물건
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("이미 구매한 물건입니다.");
+                Console.ResetColor();
+                Console.ReadKey();
+            }
         }
     }
 
