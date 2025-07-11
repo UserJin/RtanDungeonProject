@@ -21,8 +21,8 @@ namespace RtanDungeonProject
      * 1) 휴식 기능 구현 V
      * 2) 판매 기능 구현 V
      * 3) 장착 개선 V
-     * 4) 레벨업 기능 구현
-     * 5) 던전 기능 구현
+     * 4) 레벨업 기능 구현 V --- 공격력 값을 Int로 선언하고 프로젝트를 설계하여 일단은 레벨업당 공격력 상승치를 1로 설정함
+     * 5) 던전 기능 구현 V
      * 6) 데이터 저장 구현
      */
 
@@ -406,7 +406,7 @@ namespace RtanDungeonProject
                 Console.WriteLine("[아이템 목록]");
                 shop.ShowItemsList();
 
-                Console.WriteLine("\n1. 아이템 구매\n0. 나가기\n");
+                Console.WriteLine("\n1. 아이템 구매\n2. 아이템 판매\n0. 나가기\n");
                 Console.WriteLine("원하시는 행동을 입력하세요.");
                 Console.Write(">> ");
 
@@ -747,6 +747,7 @@ namespace RtanDungeonProject
     {
         ChrClass chrClass;
         int gold;
+        int dungeonClearCount;
 
         List<Item> items = new List<Item>();
         //List<Equipment> equips = new List<Equipment>();
@@ -756,11 +757,13 @@ namespace RtanDungeonProject
 
         public ChrClass GetChrClass() { return chrClass; }
         public int Gold { get { return gold; } set { gold = value; } }
+        public int DungeonClearCount { get { return dungeonClearCount; } set { dungeonClearCount = value; } }
 
         public Player(ChrClass chrClass, string name, int level, int hp, int attack, int defence) : base(name, level, hp, attack, defence)
         {
             this.chrClass = chrClass;
             this.gold = 500;
+            this.dungeonClearCount = 0;
         }
 
         // 아이템으로 올라가는 능력치
@@ -855,6 +858,49 @@ namespace RtanDungeonProject
             // 실제 판매
             Gold += (int)(items[itemIndex - 1].Price * 0.85f);
             items.Remove(items[itemIndex - 1]);
+        }
+
+        public void LevelupCheck()
+        {
+            switch (level)
+            {
+                case 1:
+                    if (dungeonClearCount >= 1)
+                    {
+                        dungeonClearCount = 0;
+                        level++;
+                        attack += 1;
+                        defence += 1;
+                    }
+                    break;
+                case 2:
+                    if (dungeonClearCount >= 2)
+                    {
+                        dungeonClearCount = 0;
+                        level++;
+                        attack += 1;
+                        defence += 1;
+                    }
+                    break;
+                case 3:
+                    if (dungeonClearCount >= 3)
+                    {
+                        dungeonClearCount = 0;
+                        level++;
+                        attack += 1;
+                        defence += 1;
+                    }
+                    break;
+                case 4:
+                    if (dungeonClearCount >= 4)
+                    {
+                        dungeonClearCount = 0;
+                        level++;
+                        attack += 1;
+                        defence += 1;
+                    }
+                    break;
+            }
         }
     }
 
@@ -1083,6 +1129,8 @@ namespace RtanDungeonProject
 
             player.Hp -= decHp;
             player.Gold += sumGold;
+            player.DungeonClearCount++;
+            player.LevelupCheck();
 
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("던전 클리어");
