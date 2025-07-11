@@ -48,6 +48,7 @@ namespace RtanDungeonProject
         // 캐릭터 정보 인스턴스
         Player player;
         Shop shop;
+        List<Dungeon> dungeons;
 
         public void GameStart()
         {
@@ -157,7 +158,7 @@ namespace RtanDungeonProject
                             break;
                         case 4:
                             // 던전 입장
-                            EnterDungeon();
+                            ShowDungeons();
                             break;
                         case 5:
                             // 휴식하기
@@ -568,9 +569,58 @@ namespace RtanDungeonProject
             }
         }
 
-        void EnterDungeon() // 던전 메뉴 진입
+        void ShowDungeons() // 던전 메뉴 진입
         {
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor= ConsoleColor.DarkYellow;
+                Console.WriteLine("던전입장");
+                Console.ResetColor();
+                Console.WriteLine("이곳에서 던전으로 들어가기전 활등을 할 수 있습니다.\n");
 
+                for(int i=0;i<dungeons.Count;i++)
+                {
+                    Console.Write($"{i + 1}. ");
+                    dungeons[i].ShowDungeonInfo();
+                }
+
+                Console.WriteLine("0. 나가기\n\n원하시는 행동을 입력해주세요.");
+                while (true)
+                {
+                    Console.Write(">> ");
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    if(choiceNum > 0 && choiceNum <= dungeons.Count)
+                    {
+                        dungeons[choiceNum-1].EnterTheDungeon(player);
+                        break;
+                    }
+                    else if (choiceNum == 0)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+                }
+            }
         }
 
         void Rest() // 휴식
@@ -644,6 +694,11 @@ namespace RtanDungeonProject
             shop.AddItem(new Weapon("커다란 대검", "양손으로도 휘두르기 힘든 대검이다. -부웅쾅부우웅쾅부우웅콰앙-", 1000, ItemType.Weapon, 10));
             shop.AddItem(new Armor("철제 투구", "양 옆으로 박힌 뿔이 특징인 투구다. 이걸 쓴다고 용언을 사용할 수는 없다.", 200, ItemType.Armor, 7));
             shop.AddItem(new Armor("하일리아의 방패", "하이랄의 기사들에게 주어지는 방패다. 명심하자 이 방패로도 닭은 못막는다.", 500, ItemType.Armor, 10));
+
+            dungeons = new List<Dungeon>();
+            dungeons.Add(new Dungeon("쉬운", 5, 1000));
+            dungeons.Add(new Dungeon("일반", 11, 1700));
+            dungeons.Add(new Dungeon("어려운", 17, 2500));
         }
     }
 
@@ -958,6 +1013,117 @@ namespace RtanDungeonProject
                 Console.ResetColor();
                 Console.ReadKey();
             }
+        }
+    }
+
+    class Dungeon
+    {
+        string difficulty;
+        int recDefence;
+        int rewardGold;
+
+        public Dungeon(string difficulty, int recDefence, int rewardGold)
+        {
+            this.difficulty = difficulty;
+            this.recDefence = recDefence;
+            this.rewardGold = rewardGold;
+        }
+
+        public void EnterTheDungeon(Player player)
+        {
+            Console.Clear();
+            Random rand = new Random();
+            int oriHp = player.Hp;
+            // 권장 방어도보다 낮은 경우, 40%로 실패
+            if (player.GetDefenceByItems() <  recDefence)
+            {
+                int s = rand.Next(0, 10);
+                if (s < 4) // 실패
+                {
+                    player.Hp -= player.Hp/2;
+                    Console.ForegroundColor= ConsoleColor.DarkRed;
+                    Console.WriteLine("던전 실패");
+                    Console.ResetColor();
+                    Console.WriteLine($"{difficulty} 던전 클리어에 실패하였습니다.");
+                    Console.WriteLine($"\n[탐험 결과]\n체력 : {oriHp} -> {player.Hp}");
+                    while (true)
+                    {
+                        string choice = Console.ReadLine();
+                        int choiceNum = 0;
+                        try
+                        {
+                            choiceNum = int.Parse(choice);
+                        }
+                        catch
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine("잘못된 입력입니다.");
+                            Console.ResetColor();
+                            continue;
+                        }
+
+                        if (choiceNum == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.WriteLine("잘못된 입력입니다.");
+                            Console.ResetColor();
+                            continue;
+                        }
+                    }
+                }
+            }
+            int decHp = rand.Next(20, 36) - (player.GetDefenceByItems() - recDefence);
+            int sumGold = rewardGold + (int)(rewardGold * 0.01f * rand.Next(player.GetAttackByItems(), (player.GetAttackByItems() * 2) + 1));
+
+            int oriGold = player.Gold;
+
+            player.Hp -= decHp;
+            player.Gold += sumGold;
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("던전 클리어");
+            Console.ResetColor();
+            Console.WriteLine($"{difficulty} 던전을 클리어 하였습니다.");
+            Console.WriteLine($"\n[탐험 결과]\n체력 : {oriHp} -> {player.Hp}\nGold : {oriGold} G -> {player.Gold} G");
+            Console.WriteLine("\n0. 나가기\n\n원하시는 행동을 입력해주세요.");
+            Console.Write(">> ");
+            while (true)
+            {
+                string choice = Console.ReadLine();
+                int choiceNum = 0;
+                try
+                {
+                    choiceNum = int.Parse(choice);
+                }
+                catch
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("잘못된 입력입니다.");
+                    Console.ResetColor();
+                    continue;
+                }
+
+                if (choiceNum == 0)
+                {
+                    return;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine("잘못된 입력입니다.");
+                    Console.ResetColor();
+                    continue;
+                }
+            }
+        }
+
+        public void ShowDungeonInfo()
+        {
+            Console.WriteLine($"{difficulty} 던전\t| 방어력 {recDefence}이상 권장");
         }
     }
 
