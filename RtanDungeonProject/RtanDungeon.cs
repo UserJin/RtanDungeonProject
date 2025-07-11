@@ -19,7 +19,7 @@ namespace RtanDungeonProject
     /*
      * 도전 사항
      * 1) 휴식 기능 구현 V
-     * 2) 판매 기능 구현
+     * 2) 판매 기능 구현 V
      * 3) 장착 개선 V
      * 4) 레벨업 기능 구현
      * 5) 던전 기능 구현
@@ -122,7 +122,7 @@ namespace RtanDungeonProject
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("르탄 마을에 오신것을 환영합니다.\n");
+                Console.WriteLine("스파르타 마을에 오신 여러분 환영합니다.\r\n이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.");
                 Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 휴식 하기\n6) 종료하기\n");
                 while (true)
                 {
@@ -264,6 +264,11 @@ namespace RtanDungeonProject
                 // 아이템 목록 출력함
                 foreach(Item item in player.GetItems())
                 {
+                    if(item is Equipment)
+                    {
+                        Equipment equipment = (Equipment)item;
+                        if(equipment.IsEquip) Console.Write("[E]");
+                    }
                     item.ShowItemInfo();
                     Console.WriteLine();
                 }
@@ -328,6 +333,11 @@ namespace RtanDungeonProject
                 for (int i = 0; i < items.Count; i++)
                 {
                     Console.Write($"- {i+1} ");
+                    if (items[i] is Equipment)
+                    {
+                        Equipment equipment = (Equipment)items[i];
+                        if (equipment.IsEquip) Console.Write("[E]");
+                    }
                     items[i].ShowItemInfo();
                     Console.WriteLine();
                 }
@@ -420,6 +430,9 @@ namespace RtanDungeonProject
                         case 1:
                             OpenBuyMenu();
                             break;
+                        case 2:
+                            OpenSellMenu();
+                            break;
                         case 0:
                             return;
                         default:
@@ -470,6 +483,74 @@ namespace RtanDungeonProject
                     if (choiceNum > 0 && choiceNum <= shop.GetSellingItems().Count)
                     {
                         player.BuyItem(choiceNum, shop);
+                    }
+                    else if (choiceNum == 0)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
+
+        void OpenSellMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("상점 - 아이템 판매");
+                Console.ResetColor();
+                Console.WriteLine("불필요한 아이템을 판매할 수 있는 상점입니다.\n");
+
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine($"{player.Gold} G\n");
+
+                Console.WriteLine("[아이템 목록]");
+
+                List<Item> items = player.GetItems();
+                for(int i=0;i< items.Count;i++)
+                {
+                    Console.Write($"- {i + 1} ");
+                    if (items[i] is Equipment)
+                    {
+                        Equipment equipment = (Equipment)items[i];
+                        if (equipment.IsEquip) Console.Write("[E]");
+                    }
+                    items[i].ShowItemInfo();
+                    Console.WriteLine($"\t| {items[i].Price} G");
+                }
+
+                Console.WriteLine("\n0. 나가기\n");
+                Console.WriteLine("원하시는 행동을 입력하세요.");
+                Console.Write(">> ");
+                
+                while (true)
+                {
+                    string choice = Console.ReadLine();
+                    int choiceNum = 0;
+                    try
+                    {
+                        choiceNum = int.Parse(choice);
+                    }
+                    catch
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine("잘못된 입력입니다.");
+                        Console.ResetColor();
+                        continue;
+                    }
+
+                    if (choiceNum > 0 && choiceNum <= player.GetItems().Count)
+                    {
+                        player.SellItem(choiceNum);
                     }
                     else if (choiceNum == 0)
                     {
@@ -538,7 +619,7 @@ namespace RtanDungeonProject
                         else
                         {
                             Console.ForegroundColor = ConsoleColor.DarkRed;
-                            Console.WriteLine("소지금이 부족합니다.");
+                            Console.WriteLine("Gold 가 부족합니다.");
                             Console.ResetColor();
                         }
                         Console.ReadKey();
@@ -613,7 +694,7 @@ namespace RtanDungeonProject
         int gold;
 
         List<Item> items = new List<Item>();
-        List<Equipment> equips = new List<Equipment>();
+        //List<Equipment> equips = new List<Equipment>();
 
         Weapon equipWeapon = null;
         Armor equipArmor = null;
@@ -630,42 +711,18 @@ namespace RtanDungeonProject
         // 아이템으로 올라가는 능력치
         public int GetAttackOnlyItems()
         {
-            // 이전 알고리즘
-            //int attackPower = 0;
-
-            //foreach (var item in equips)
-            //{
-            //    if (item.Type == ItemType.Weapon)
-            //    {
-            //        Weapon weapon = (Weapon)item;
-            //        attackPower += weapon.AttackPower;
-            //    }
-            //}
-
-            //return attackPower;
-
-            // 수정 알고리즘
-            return equipWeapon.AttackPower;
+            if (equipWeapon != null)
+                return equipWeapon.AttackPower;
+            else
+                return 0;
         }
 
         public int GetDefenceOnlyItems()
         {
-            // 이전 알고리즘
-            //int defencePower = 0;
-
-            //foreach (var item in equips)
-            //{
-            //    if (item.Type == ItemType.Armor)
-            //    {
-            //        Armor armor = (Armor)item;
-            //        defencePower += armor.DefencePower;
-            //    }
-            //}
-
-            //return defencePower;
-
-            // 수정 알고리즘
-            return equipArmor.DefencePower;
+            if(equipArmor != null)
+                return equipArmor.DefencePower;
+            else
+                return 0;
         }
 
         // 아이템을 포함한 최종 능력치
@@ -682,19 +739,6 @@ namespace RtanDungeonProject
 
         public void EqipItem(Equipment equip)
         {
-            // 이전 알고리즘
-            //if (equip.IsEquip)
-            //{
-            //    equips.Remove(equip);
-            //    equip.IsEquip = false;
-            //}
-            //else
-            //{
-            //    equips.Add(equip);
-            //    equip.IsEquip = true;
-            //}
-
-            // 1종류 1장착 알고리즘
             if(equip.Type == ItemType.Weapon)
             {
                 if(equipWeapon != null)
@@ -730,6 +774,32 @@ namespace RtanDungeonProject
         public void BuyItem(int itemIndex, Shop shop)
         {
             shop.SellItemTo(itemIndex, this);
+        }
+
+        public void SellItem(int itemIndex)
+        {
+            // 장착 중인 아이템이라면 장착해제
+            if (items[itemIndex - 1].Type == ItemType.Weapon)
+            {
+                Weapon tempWeapon = (Weapon)items[itemIndex - 1];
+                if (tempWeapon == equipWeapon)
+                {
+                    tempWeapon.IsEquip = false;
+                    equipWeapon = null;
+                }
+            }
+            else if (items[itemIndex - 1].Type == ItemType.Armor)
+            {
+                Armor tempArmor = (Armor)items[itemIndex - 1];
+                if(tempArmor == equipArmor)
+                {
+                    tempArmor.IsEquip = false;
+                    equipArmor = null;
+                }
+            }
+            // 실제 판매
+            Gold += (int)(items[itemIndex - 1].Price * 0.85f);
+            items.Remove(items[itemIndex - 1]);
         }
     }
 
@@ -781,7 +851,7 @@ namespace RtanDungeonProject
 
         public override void ShowItemInfo()
         {
-            if (isEquip) Console.Write("[E]");
+            //if (isEquip) Console.Write("[E]");
             Console.Write($"{name}\t | 공격력 : +{attackPower}\t | {description}");
         }
     }
@@ -799,7 +869,7 @@ namespace RtanDungeonProject
 
         public override void ShowItemInfo()
         {
-            if (isEquip) Console.Write("[E]");
+            //if (isEquip) Console.Write("[E]");
             Console.Write($"{name}\t | 방어력 : +{defencePower}\t | {description}");
         }
     }
