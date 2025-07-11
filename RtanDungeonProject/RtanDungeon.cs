@@ -122,7 +122,7 @@ namespace RtanDungeonProject
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("스파르타 마을에 오신 여러분 환영합니다.\r\n이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.");
+                Console.WriteLine("스파르타 마을에 오신 여러분 환영합니다.\r\n이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.\n");
                 Console.WriteLine("1) 상태 보기\n2) 인벤토리\n3) 상점\n4) 던전 가기\n5) 휴식 하기\n6) 종료하기\n");
                 while (true)
                 {
@@ -726,19 +726,6 @@ namespace RtanDungeonProject
             this.hp = hp;
             this.attack = attack;
             this.defence = defence;
-        }
-
-        public void AttackUnit(Unit unit)
-        {
-            if (unit.Hp > 0)
-            {
-                unit.OnDamaged(attack);
-            }
-        }
-
-        public void OnDamaged(int damage)
-        {
-            hp -= (damage - defence);
         }
     }
 
