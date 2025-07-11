@@ -40,15 +40,14 @@ namespace RtanDungeonProject
             RtanDungeon rd = new RtanDungeon();
             rd.GameStart();
         }
-
     }
 
     class RtanDungeon
     {
         // 캐릭터 정보 인스턴스
-        Player player;
-        Shop shop;
-        List<Dungeon> dungeons;
+        Player? player;
+        Shop? shop;
+        List<Dungeon>? dungeons;
 
         public void GameStart()
         {
@@ -118,7 +117,7 @@ namespace RtanDungeonProject
             player.AddItem(new Armor("허름한 천옷", "허름한 천으로 만들어진 옷이다.", 15, ItemType.Armor, 5));
         }
 
-        void ShowMainmenu() // 메인메뉴
+        void ShowMainmenu() // 메인 메뉴
         {
             while (true)
             {
@@ -447,7 +446,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void OpenBuyMenu() // 상점 아이템 구매
+        void OpenBuyMenu() // 상점 아이템 구매 메뉴
         {
             while(true)
             {
@@ -501,7 +500,7 @@ namespace RtanDungeonProject
             }
         }
 
-        void OpenSellMenu()
+        void OpenSellMenu() // 상점 아이템 판매 메뉴
         {
             while (true)
             {
